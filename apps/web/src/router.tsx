@@ -1,4 +1,4 @@
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, Navigate } from "react-router-dom";
 import Landing from "./pages/Landing";
 import OnboardingLayout from "./pages/Onboarding/OnboardingLayout";
 import Login from "./pages/Auth/Login";
@@ -9,6 +9,8 @@ import Settings from "./pages/Settings";
 import Learning from "./pages/Learning/Learning";
 import { AppShell } from "./components/layout/AppShell";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
+import CareerList from "./pages/Career/CareerList";
+import SkillMapping from "./pages/Career/SkillMapping";
 
 export const router = createBrowserRouter([
     {
@@ -44,6 +46,14 @@ export const router = createBrowserRouter([
                 element: <Dashboard />
             },
             {
+                path: "careers",
+                element: <CareerList />
+            },
+            {
+                path: "career",
+                element: <Navigate to="/dashboard/careers" replace />
+            },
+            {
                 path: "career/:id",
                 element: <CareerDetails />
             },
@@ -54,6 +64,10 @@ export const router = createBrowserRouter([
             {
                 path: "learning",
                 element: <Learning />
+            },
+            {
+                path: "skill-mapping",
+                element: <SkillMapping />
             }
         ]
     }

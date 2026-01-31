@@ -1,20 +1,27 @@
 {
-  "name": "career-path-guider",
-  "private": true,
+  "name": "career-path-guider-backend",
+  "version": "1.0.0",
+  "description": "Microservices backend for AI-powered career guidance",
   "scripts": {
-    "build": "turbo run build",
-    "dev": "turbo run dev",
-    "lint": "turbo run lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "check-types": "turbo run check-types"
+    "start": "./start-backend.sh",
+    "stop": "docker-compose down",
+    "logs": "docker-compose logs -f",
+    "logs:api": "docker-compose logs -f api-gateway",
+    "logs:auth": "docker-compose logs -f auth-service",
+    "logs:user": "docker-compose logs -f user-service",
+    "logs:career": "docker-compose logs -f career-service",
+    "logs:ai": "docker-compose logs -f ai-service",
+    "restart": "docker-compose restart",
+    "clean": "docker-compose down -v",
+    "db:migrate": "docker-compose exec auth-service npx prisma migrate deploy && docker-compose exec user-service npx prisma migrate deploy && docker-compose exec career-service npx prisma migrate deploy && docker-compose exec ai-service npx prisma migrate deploy",
+    "health": "curl http://localhost:3000/health && curl http://localhost:3001/health && curl http://localhost:3002/health && curl http://localhost:3003/health && curl http://localhost:3004/ai/health"
   },
-  "devDependencies": {
-    "prettier": "^3.7.4",
-    "turbo": "^2.7.6",
-    "typescript": "5.9.2"
-  },
-  "packageManager": "pnpm@9.0.0",
-  "engines": {
-    "node": ">=18"
-  }
+  "keywords": [
+    "microservices",
+    "career-guidance",
+    "grok-ai",
+    "docker"
+  ],
+  "author": "",
+  "license": "MIT"
 }

@@ -3,11 +3,11 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { ArrowLeft, TrendingUp, DollarSign, Users, BookOpen, Clock } from 'lucide-react';
-import { RoadmapTimeline } from '@/components/features/RoadmapTimeline';
+import { WavyRoadmap } from '@/components/features/WavyRoadmap';
 import { careerApi, Career, RoadmapStep } from '@/api/career';
 
 // Mock data for fallback
-const MOCK_CAREER = {
+const MOCK_CAREER: Career = {
     id: 'mock-career',
     title: 'Senior Frontend Engineer',
     description: 'Lead frontend architecture and build scalable user interfaces using React and TypeScript. You will be responsible for setting technical direction, mentoring junior developers, and ensuring high performance and accessibility standards.',
@@ -20,30 +20,45 @@ const MOCK_CAREER = {
         { title: 'Advanced React Patterns', type: 'Course', duration: '6h 30m' },
         { title: 'System Design Interview Guide', type: 'Book', duration: '350 pages' },
         { title: 'Web Performance Optimization', type: 'Workshop', duration: '4h' }
-    ]
+    ],
+    // New fields
+    category: 'Technology',
+    avgSalary: 140000,
+    growthRate: 18,
+    difficulty: 'Advanced',
+    requiredSkills: ['React', 'TypeScript', 'System Design', 'Performance', 'Testing']
 };
 
 const MOCK_ROADMAP: RoadmapStep[] = [
     {
         id: '1',
+        order: 1,
         title: 'Master React Fundamentals',
         description: 'Hooks, Context, and Component patterns',
         status: 'completed',
         duration: '2 weeks',
+        resources: ['React Documentation'],
+        estimatedHours: 20
     },
     {
         id: '2',
+        order: 2,
         title: 'Advanced TypeScript',
         description: 'Generics, Utility types, and Type inference',
         status: 'current',
         duration: '3 weeks',
+        resources: ['TypeScript Handbook'],
+        estimatedHours: 35
     },
     {
         id: '3',
+        order: 3,
         title: 'System Design',
         description: 'Scalability, Performance and Architecture',
         status: 'locked',
         duration: '4 weeks',
+        resources: ['System Design Primer'],
+        estimatedHours: 40
     },
 ];
 
@@ -65,7 +80,7 @@ export default function CareerDetails() {
                     // but for now we fallback if API fails (likely due to DB)
                     try {
                         const careerData = await careerApi.getCareerById(id);
-                        const roadmapData = await careerApi.getRoadmap();
+                        const roadmapData = await careerApi.getRoadmap(id);
                         setCareer({ ...MOCK_CAREER, ...careerData }); // Merge to ensure we have all fields for UI
                         setRoadmap(roadmapData.length > 0 ? roadmapData : MOCK_ROADMAP);
                     } catch (err) {
@@ -88,16 +103,7 @@ export default function CareerDetails() {
         fetchData();
     }, [id]);
 
-    const handleStepClick = (stepId: string) => {
-        // Toggle status for interactive demo (mock logic)
-        setRoadmap(prev => prev.map(step => {
-            if (step.id === stepId) {
-                const nextStatus = step.status === 'locked' ? 'current' : step.status === 'current' ? 'completed' : 'locked';
-                return { ...step, status: nextStatus };
-            }
-            return step;
-        }));
-    };
+
 
     if (loading) {
         return <div className="p-8 text-center">Loading career path...</div>;
@@ -158,7 +164,15 @@ export default function CareerDetails() {
                         {/* We need to pass validation or handler if RoadmapTimeline supported it, 
                             for now we just pass the steps which update via state re-render */}
                         <div>
-                            <RoadmapTimeline steps={roadmap} onStepClick={handleStepClick} />
+                            <WavyRoadmap
+                                steps={roadmap.map(step => ({
+                                    id: step.id,
+                                    title: step.title,
+                                    description: step.description,
+                                    status: step.status as any,
+                                    duration: step.duration
+                                }))}
+                            />
                         </div>
                     </div>
                 </div>

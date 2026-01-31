@@ -1,9 +1,6 @@
-// Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-import { getAuth, GoogleAuthProvider, signInWithPopup, UserCredential } from "firebase/auth";
+import { getAuth } from "firebase/auth";
 
-// Your web app's Firebase configuration
 const firebaseConfig = {
     apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
     authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
@@ -16,19 +13,21 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
 const auth = getAuth(app);
+
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+
 const googleProvider = new GoogleAuthProvider();
 
-// Google Sign-In Helper
-export const signInWithGoogle = async (): Promise<UserCredential> => {
+export const signInWithGoogle = async () => {
     try {
         const result = await signInWithPopup(auth, googleProvider);
         return result;
     } catch (error) {
-        console.error("Error signing in with Google:", error);
+        console.error("Error signing in with Google", error);
         throw error;
     }
 };
 
-export { app, analytics, auth, googleProvider };
+export { auth, googleProvider };
+export default app;

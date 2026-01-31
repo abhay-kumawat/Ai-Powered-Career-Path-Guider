@@ -1,7 +1,9 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import { register, login, getMe } from "./controllers/auth.controller";
+import authRoutes from "./routes/auth.routes";
+import { errorHandler, notFound } from "./utils/errorMiddleware";
+import { logger } from "./utils/logger";
 
 dotenv.config();
 
@@ -11,14 +13,15 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
-app.post("/auth/register", register);
-app.post("/auth/login", login);
-app.get("/auth/me", getMe);
+app.use("/auth", authRoutes);
 
 app.get("/health", (req, res) => {
     res.json({ status: "Auth Service Running", mode: "Postgres/Prisma" });
 });
 
+app.use(notFound);
+app.use(errorHandler);
+
 app.listen(PORT, () => {
-    console.log(`Auth Service running on port ${PORT}`);
+    logger.info(`Auth Service running on port ${PORT}`);
 });

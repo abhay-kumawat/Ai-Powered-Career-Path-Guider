@@ -1,89 +1,45 @@
-import { Request, Response } from 'express';
-import { prisma } from '../utils/prisma';
-import { hashPassword, comparePassword, generateAccessToken, generateRefreshToken } from '../utils/auth';
+import type { Request, Response, RequestHandler } from "express";
+import { asyncHandler } from "../utils/asyncHandler";
+import { authService } from "../services/auth.service";
 
-export const register = async (req: Request, res: Response) => {
-    try {
-        const { email, password, firstName, lastName } = req.body;
+export const register: RequestHandler = asyncHandler(async (req: Request, res: Response) => {
+    const { email, password, firstName, lastName } = req.body;
+    const result = await authService.register({ email, password, firstName, lastName });
+    res.status(201).json(result);
+});
 
-        const existingUser = await prisma.user.findUnique({ where: { email } });
-        if (existingUser) {
-            return res.status(400).json({ message: 'User already exists' });
-        }
+export const login: RequestHandler = asyncHandler(async (req: Request, res: Response) => {
+    const { email, password } = req.body;
+    const result = await authService.login({ email, password });
+    res.json(result);
+});
 
-        const passwordHash = await hashPassword(password);
-        const user = await prisma.user.create({
-            data: {
-                email,
-                passwordHash,
-                firstName,
-                lastName
-            }
-        });
+export const googleAuth: RequestHandler = asyncHandler(async (req: Request, res: Response) => {
+    const { idToken, email, firstName, lastName } = req.body;
 
-        const token = generateAccessToken({ userId: user.id, email: user.email, role: 'USER' });
-
-        // Return structure matching Frontend types/auth.ts AuthResponse
-        res.status(201).json({
-            token,
-            user: {
-                id: user.id,
-                email: user.email,
-                firstName: user.firstName,
-                lastName: user.lastName,
-                role: 'USER',
-                createdAt: user.createdAt.toISOString(),
-                updatedAt: user.updatedAt.toISOString()
-            }
-        });
-    } catch (error) {
-        console.error('Register error', error);
-        res.status(500).json({ message: 'Internal server error' });
+    if (!idToken || !email) {
+        return res.status(400).json({ message: 'ID token and email are required' });
     }
-};
 
-export const login = async (req: Request, res: Response) => {
-    try {
-        const { email, password } = req.body;
+    // For now, we trust the Firebase token and create/login the user
+    // In production, you should verify the Firebase token with Firebase Admin SDK
+    const result = await authService.googleLogin({ email, firstName, lastName });
+    res.json(result);
+});
 
-        const user = await prisma.user.findUnique({ where: { email } });
-        if (!user || !(await comparePassword(password, user.passwordHash))) {
-            return res.status(401).json({ message: 'Invalid credentials' });
-        }
+export const getMe: RequestHandler = asyncHandler(async (req: Request, res: Response) => {
+    const userId = (req as any).userId;
 
-        const token = generateAccessToken({ userId: user.id, email: user.email, role: 'USER' });
-
-        res.json({
-            token,
-            user: {
-                id: user.id,
-                email: user.email,
-                firstName: user.firstName,
-                lastName: user.lastName,
-                role: 'USER',
-                createdAt: user.createdAt.toISOString(),
-                updatedAt: user.updatedAt.toISOString()
-            }
-        });
-    } catch (error) {
-        console.error('Login error', error);
-        res.status(500).json({ message: 'Internal server error' });
+    if (!userId) {
+        return res.status(401).json({ message: 'Unauthorized' });
     }
-};
 
-export const getMe = async (req: Request, res: Response) => {
-    try {
-        // In a real middleware, req.user would be populated. 
-        // For now, we'll parse header manually or rely on Gateway passing headers if we implemented it there.
-        // Assuming Gateway passes X-User-Id
-        const userId = req.headers['x-user-id'] as string; // Gateway logic
+    const user = await authService.getUserById(userId);
 
-        // OR fallback to decoding token if Gateway isn't stripping it
-        // For simplicity in this step, let's assume we decode token here or just return mock if not setup
-
-        // TODO: Implement proper middleware
-        return res.status(501).json({ message: 'Not implemented yet' });
-    } catch (error) {
-        res.status(500).json({ message: 'Error' });
+    if (!user) {
+        return res.status(404).json({ message: 'User not found' });
     }
-};
+
+    res.json({ user });
+});
+

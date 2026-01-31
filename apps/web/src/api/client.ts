@@ -2,9 +2,9 @@ import axios, { InternalAxiosRequestConfig, AxiosResponse, AxiosError } from 'ax
 import { storage } from '@/utils/storage';
 import { getMockData } from './mockData';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
 // Force mock if backend is down or explicitly requested
-const USE_MOCK = true; // import.meta.env.VITE_USE_MOCK === 'true';
+const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true';
 
 export const client = axios.create({
     baseURL: API_URL,

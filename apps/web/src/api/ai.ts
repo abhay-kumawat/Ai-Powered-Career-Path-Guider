@@ -1,17 +1,33 @@
 import { client } from './client';
 
-export interface AnalysisResult {
-    analysis: string;
-    recommendations: {
-        role: string;
-        match: number;
-        reason: string;
-    }[];
+export interface ChatMessage {
+    role: 'user' | 'assistant';
+    content: string;
 }
 
 export const aiApi = {
-    submitAssessment: async (answers: any[]): Promise<AnalysisResult> => {
-        const response = await client.post<AnalysisResult>('/ai/analyze', { answers });
+    chat: async (message: string) => {
+        const response = await client.post<{ data: { response: string } }>('/ai/chat', { message });
+        return response.data.data.response;
+    },
+
+    getInsights: async () => {
+        const response = await client.get('/ai/insights');
         return response.data;
+    },
+
+    submitAssessment: async (answers: number[]) => {
+        const response = await client.post<{ data: any }>('/ai/assessment', { answers });
+        return response.data.data;
+    },
+
+    analyzeCareerPath: async (answers: any) => {
+        const response = await client.post<{ data: any }>('/ai/analyze', { answers });
+        return response.data.data; // Returns recommendation with match score
+    },
+
+    generateRoadmap: async (params: { careerPathTitle: string, currentSkills: string[], targetSkills: string[], timeframe: string }) => {
+        const response = await client.post<{ data: any }>('/ai/roadmap', params);
+        return response.data.data;
     }
 };

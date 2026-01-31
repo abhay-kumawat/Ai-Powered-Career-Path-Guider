@@ -12,6 +12,11 @@ export const authApi = {
         return response.data;
     },
 
+    googleLogin: async (data: { idToken: string; email: string; firstName?: string; lastName?: string }): Promise<AuthResponse> => {
+        const response = await client.post<AuthResponse>('/auth/google', data);
+        return response.data;
+    },
+
     getCurrentUser: async (): Promise<User> => {
         const response = await client.get<{ user: User }>('/auth/me');
         return response.data.user;

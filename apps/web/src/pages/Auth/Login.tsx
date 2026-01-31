@@ -44,19 +44,15 @@ export default function Login() {
             // Get Firebase ID token
             const idToken = await user.getIdToken();
 
-            // Send to your backend to verify and create/login user
-            // For now, we'll use a mock token (you'll need to implement backend endpoint)
-            const mockUser = {
-                id: user.uid,
+            // Send to backend to exchange for our JWT token
+            const response = await authApi.googleLogin({
+                idToken,
                 email: user.email || '',
-                firstName: user.displayName?.split(' ')[0] || 'User',
-                lastName: user.displayName?.split(' ').slice(1).join(' ') || '',
-                role: 'USER' as const,
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-            };
+                firstName: user.displayName?.split(' ')[0],
+                lastName: user.displayName?.split(' ').slice(1).join(' '),
+            });
 
-            login(idToken, mockUser);
+            login(response.token, response.user);
         } catch (err: any) {
             if (err.code !== 'auth/popup-closed-by-user') {
                 setError('Failed to sign in with Google. Please try again.');

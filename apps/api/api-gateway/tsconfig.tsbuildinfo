@@ -1,1 +1,1 @@
-{"root":["./src/index.ts","./src/config/index.ts","./src/middlewares/index.ts","./src/routes/index.ts","./src/utils/index.ts"],"version":"5.9.2"}
+{"root":["./src/index.ts","./src/config/index.ts","./src/config/services.ts","./src/middlewares/auth.middleware.ts","./src/middlewares/errorMiddleware.ts","./src/middlewares/index.ts","./src/middlewares/rateLimiter.middleware.ts","./src/routes/index.ts","./src/utils/errorHandler.ts","./src/utils/errors.ts","./src/utils/httpClient.ts","./src/utils/index.ts","./src/utils/logger.ts"],"version":"5.9.3"}

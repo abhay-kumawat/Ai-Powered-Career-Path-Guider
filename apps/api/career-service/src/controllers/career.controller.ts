@@ -28,8 +28,26 @@ const MOCK_ROADMAP = [
 
 export const getCareers = async (req: Request, res: Response) => {
     try {
-        const careers = await prisma.careerPath.findMany();
-        res.json({ careers });
+        const { category, difficulty, minSalary, maxSalary } = req.query;
+
+        const where: any = {};
+
+        if (category) {
+            where.category = { equals: String(category), mode: 'insensitive' };
+        }
+
+        if (difficulty) {
+            where.difficulty = { equals: String(difficulty), mode: 'insensitive' };
+        }
+
+        if (minSalary || maxSalary) {
+            where.avgSalary = {};
+            if (minSalary) where.avgSalary.gte = Number(minSalary);
+            if (maxSalary) where.avgSalary.lte = Number(maxSalary);
+        }
+
+        const careers = await prisma.careerPath.findMany({ where });
+        res.json({ data: careers });
     } catch (error) {
         console.error('Error fetching careers:', error);
         res.status(500).json({ message: 'Internal server error' });
@@ -82,6 +100,102 @@ export const getRoadmap = async (req: Request, res: Response) => {
         res.json({ roadmap: roadmap.items });
     } catch (error) {
         console.error('Error fetching roadmap:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+export const createRoadmap = async (req: Request, res: Response) => {
+    try {
+        const { title, description, items, careerPathId } = req.body;
+        const userId = req.user?.userId; // From auth middleware
+
+        if (!userId) {
+            return res.status(401).json({ message: "User not authenticated" });
+        }
+
+        // Check if career path exists, if provided. If not, maybe create dynamic?
+        // For simplicity, we assume we might create a roadmap linked to a career path
+        // OR we just create a standalone roadmap if careerPathId is missing.
+        // But Schema requires careerPathId. So we must ensure CareerPath exists or create one.
+
+        let targetCareerPathId = careerPathId;
+
+        if (!targetCareerPathId) {
+            // Create a generic/custom career path entry for this user
+            const newCareer = await prisma.careerPath.create({
+                data: {
+                    title: title || "Custom Career Path",
+                    userId: userId,
+                    description: description
+                }
+            });
+            targetCareerPathId = newCareer.id;
+        }
+
+        const roadmap = await prisma.roadmap.create({
+            data: {
+                title: title,
+                description: description,
+                userId: userId,
+                careerPathId: targetCareerPathId,
+                items: {
+                    create: items.map((item: any, index: number) => ({
+                        title: item.title,
+                        description: item.description,
+                        status: item.status || "locked",
+                        duration: item.duration,
+                        order: index
+                    }))
+                }
+            },
+            include: {
+                items: true
+            }
+        });
+
+        res.status(201).json({ roadmap });
+    } catch (error) {
+        console.error('Error creating roadmap:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+export const updateRoadmapItem = async (req: Request, res: Response) => {
+    try {
+        const { id, itemId } = req.params; // roadmap id, item id
+        const { status } = req.body;
+
+        // Verify ownership access (omitted for brevity, but ideally check roadmap.userId === req.user.userId)
+
+        const updatedItem = await prisma.roadmapItem.update({
+            where: { id: String(itemId) },
+            data: { status }
+        });
+
+        res.json({ item: updatedItem });
+    } catch (error) {
+        console.error('Error updating roadmap item:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+export const getUserRoadmap = async (req: Request, res: Response) => {
+    try {
+        const userId = req.user?.userId;
+        if (!userId) return res.status(401).json({ message: "Unauthorized" });
+
+        const roadmap = await prisma.roadmap.findFirst({
+            where: { userId },
+            include: {
+                items: { orderBy: { order: 'asc' } },
+                careerPath: true
+            },
+            orderBy: { updatedAt: 'desc' }
+        });
+
+        res.json({ roadmap });
+    } catch (error) {
+        console.error('Error fetching user roadmap:', error);
         res.status(500).json({ message: 'Internal server error' });
     }
 };

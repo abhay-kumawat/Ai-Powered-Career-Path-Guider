@@ -8,15 +8,15 @@ export function Navbar() {
     const { theme, setTheme } = useTheme();
 
     return (
-        <header className="flex h-16 items-center justify-between border-b border-neutral-200 bg-white px-6 dark:border-dark-border dark:bg-dark-surface">
+        <header className="flex h-20 items-center justify-between border-b border-white/10 glass-strong px-8 relative z-20">
             {/* ... search ... */}
             <div className="flex flex-1 items-center gap-4">
                 <div className="relative w-full max-w-md">
-                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
+                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-purple-300" />
                     <input
                         type="text"
                         placeholder="Search careers, skills, or paths..."
-                        className="h-10 w-full rounded-xl border border-neutral-200 bg-neutral-50 pl-10 pr-4 text-sm outline-none transition-all focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 dark:border-dark-border dark:bg-dark-hover dark:text-white"
+                        className="h-11 w-full rounded-2xl border border-white/10 bg-white/5 pl-10 pr-4 text-sm text-white placeholder-purple-300/50 outline-none transition-all focus:border-purple-500/50 focus:bg-white/10 focus:ring-2 focus:ring-purple-500/20"
                     />
                 </div>
             </div>
@@ -25,27 +25,27 @@ export function Navbar() {
                 <Button
                     variant="ghost"
                     size="icon"
-                    className="rounded-full"
+                    className="rounded-full hover:bg-white/10 text-purple-200 hover:text-white"
                     onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
                 >
                     {theme === 'dark' ? (
-                        <Sun className="h-5 w-5 text-neutral-600 dark:text-neutral-400" />
+                        <Sun className="h-5 w-5" />
                     ) : (
-                        <Moon className="h-5 w-5 text-neutral-600 dark:text-neutral-400" />
+                        <Moon className="h-5 w-5" />
                     )}
                 </Button>
-                <Button variant="ghost" size="icon" className="rounded-full">
-                    <Bell className="h-5 w-5 text-neutral-600 dark:text-neutral-400" />
+                <Button variant="ghost" size="icon" className="rounded-full hover:bg-white/10 text-purple-200 hover:text-white">
+                    <Bell className="h-5 w-5" />
                 </Button>
 
-                <div className="flex items-center gap-3 pl-4 border-l border-neutral-200 dark:border-dark-border">
+                <div className="flex items-center gap-3 pl-4 border-l border-white/10">
                     <div className="text-right hidden sm:block">
-                        <p className="text-sm font-medium text-neutral-900 dark:text-white">
+                        <p className="text-sm font-medium text-white">
                             {user?.firstName} {user?.lastName}
                         </p>
-                        <p className="text-xs text-neutral-500">{user?.role}</p>
+                        <p className="text-xs text-purple-300">{user?.role || 'Explorer'}</p>
                     </div>
-                    <div className="h-10 w-10 rounded-full bg-gradient-to-r from-primary-600 to-accent-purple flex items-center justify-center text-white font-bold">
+                    <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-white font-bold shadow-lg shadow-purple-500/20">
                         {user?.firstName?.[0]}
                     </div>
                 </div>

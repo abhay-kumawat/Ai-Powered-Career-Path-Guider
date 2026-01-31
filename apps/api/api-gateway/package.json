@@ -2,9 +2,9 @@
   "name": "api-gateway",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "build": "tsc -b",
+    "build": "npx tsc -b",
     "dev": "node dist/index.js",
     "start": "pnpm run build && pnpm run dev"
   },
@@ -12,10 +12,13 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "axios": "^1.6.0",
     "cors": "^2.8.6",
     "dotenv": "^16.4.0",
     "express": "^5.2.1",
-    "express-http-proxy": "^2.1.2"
+    "express-http-proxy": "^2.1.2",
+    "http-status-codes": "^2.3.0",
+    "winston": "^3.19.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",

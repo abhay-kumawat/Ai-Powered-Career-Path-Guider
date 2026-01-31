@@ -3,14 +3,14 @@ import { Button } from '@/components/ui/Button';
 import { useAuth } from '@/hooks/useAuth';
 import { Sparkles, TrendingUp, Clock, Target, Award, Zap, BookOpen } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { careerApi, Career } from '@/api/career';
+import { careerApi, CareerPath as Career } from '@/api/career';
 
 // Widgets
 // Widgets
 import { SkillTracker } from '@/components/dashboard/SkillTracker';
 import { CalendarWidget } from '@/components/dashboard/CalendarWidget';
 import { JobCard } from '@/components/dashboard/JobCard';
-import { PromoCard } from '@/components/dashboard/PromoCard';
+import { AiAssistantModal } from '@/components/dashboard/AiAssistantModal';
 import { CourseRail } from '@/components/dashboard/CourseRail';
 
 // Mock data for fallback
@@ -22,7 +22,13 @@ const MOCK_CAREERS: Career[] = [
         matchScore: 95,
         salary: '$120k - $160k',
         growth: 'High',
-        demand: 'Very High'
+        demand: 'Very High',
+        // New fields
+        category: 'Design',
+        avgSalary: 140000,
+        growthRate: 12,
+        difficulty: 'Advanced',
+        requiredSkills: ['Figma', 'UI/UX', 'Prototyping']
     },
     {
         id: '2',
@@ -31,7 +37,13 @@ const MOCK_CAREERS: Career[] = [
         matchScore: 88,
         salary: '$110k - $150k',
         growth: 'High',
-        demand: 'High'
+        demand: 'High',
+        // New fields
+        category: 'Technology',
+        avgSalary: 130000,
+        growthRate: 15,
+        difficulty: 'Intermediate',
+        requiredSkills: ['React', 'TypeScript', 'CSS']
     }
 ];
 
@@ -39,6 +51,7 @@ export default function Dashboard() {
     const { user } = useAuth();
     const [careers, setCareers] = useState<Career[]>([]);
     const [loading, setLoading] = useState(true);
+    const [showAiModal, setShowAiModal] = useState(false);
 
     useEffect(() => {
         const loadData = async () => {
@@ -47,7 +60,7 @@ export default function Dashboard() {
                 const careerData = await careerApi.getCareers();
                 setCareers(careerData.length > 0 ? careerData : MOCK_CAREERS);
             } catch (err) {
-                console.warn("Failed to load dashboard api data, using fallback", err);
+                console.log("Dashboard: Using offline mode (API not reachable)");
                 setCareers(MOCK_CAREERS);
             } finally {
                 setLoading(false);
@@ -106,49 +119,9 @@ export default function Dashboard() {
     const featuredJob = careers[0];
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 relative overflow-hidden">
-            {/* Animated Background Elements */}
-            <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                <motion.div
-                    animate={{
-                        x: [0, 100, 0],
-                        y: [0, -100, 0],
-                    }}
-                    transition={{
-                        duration: 20,
-                        repeat: Infinity,
-                        ease: "linear"
-                    }}
-                    className="absolute -top-40 -left-40 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl"
-                />
-                <motion.div
-                    animate={{
-                        x: [0, -100, 0],
-                        y: [0, 100, 0],
-                    }}
-                    transition={{
-                        duration: 25,
-                        repeat: Infinity,
-                        ease: "linear"
-                    }}
-                    className="absolute -bottom-40 -right-40 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"
-                />
-                <motion.div
-                    animate={{
-                        scale: [1, 1.2, 1],
-                        opacity: [0.3, 0.5, 0.3],
-                    }}
-                    transition={{
-                        duration: 15,
-                        repeat: Infinity,
-                        ease: "easeInOut"
-                    }}
-                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-purple-500/5 to-pink-500/5 rounded-full blur-3xl"
-                />
-            </div>
-
+        <div className="min-h-full relative overflow-hidden">
             <motion.div
-                className="relative z-10 p-6 md:p-8 lg:p-10 space-y-8 max-w-[1800px] mx-auto"
+                className="relative z-10 space-y-8 max-w-[1800px] mx-auto"
                 variants={container}
                 initial="hidden"
                 animate="show"
@@ -183,11 +156,18 @@ export default function Dashboard() {
                                 </div>
                             </div>
                             <div className="flex gap-3 flex-wrap">
-                                <Button variant="outline" className="group border-purple-500/30 hover:border-purple-500 hover:bg-purple-500/10 text-white backdrop-blur-xl">
+                                <Button
+                                    variant="outline"
+                                    onClick={() => window.location.href = '/dashboard/careers'} // Using simple navigation for now, or could import useNavigate
+                                    className="group border-purple-500/30 hover:border-purple-500 hover:bg-purple-500/10 text-white backdrop-blur-xl"
+                                >
                                     <BookOpen className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform" />
                                     Explore Careers
                                 </Button>
-                                <Button className="group bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 shadow-lg shadow-purple-500/50 text-white border-0">
+                                <Button
+                                    onClick={() => setShowAiModal(true)}
+                                    className="group bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 shadow-lg shadow-purple-500/50 text-white border-0"
+                                >
                                     <Sparkles className="mr-2 h-4 w-4 group-hover:rotate-12 transition-transform" />
                                     AI Assistant
                                 </Button>
@@ -301,19 +281,13 @@ export default function Dashboard() {
                             {featuredJob && (
                                 <JobCard
                                     title={featuredJob.title}
-                                    salary={featuredJob.salary.replace(' - ', '-')}
+                                    salary={(featuredJob.salary || '').replace(' - ', '-')}
                                     company="Tech Corp"
                                     location="Remote"
                                 />
                             )}
                             {!featuredJob && <JobCard />}
-                        </div>
-                    </motion.div>
-
-                    {/* Promo Card */}
-                    <motion.div variants={item} className="lg:col-span-6">
-                        <div className="backdrop-blur-xl bg-gradient-to-br from-white/5 to-white/[0.02] border border-white/10 rounded-3xl p-1 shadow-2xl shadow-purple-500/10">
-                            <PromoCard />
+                            {!featuredJob && <JobCard />}
                         </div>
                     </motion.div>
                 </div>
@@ -324,6 +298,8 @@ export default function Dashboard() {
                         <CourseRail />
                     </div>
                 </motion.div>
+
+                <AiAssistantModal isOpen={showAiModal} onClose={() => setShowAiModal(false)} />
             </motion.div>
         </div>
     );

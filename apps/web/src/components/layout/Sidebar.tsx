@@ -1,12 +1,13 @@
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Compass, BookOpen, Settings, LogOut } from 'lucide-react';
+import { LayoutDashboard, Compass, BookOpen, Settings, LogOut, Network, Brain } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import { useAuth } from '@/hooks/useAuth';
 
 const navigation = [
     { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
-    { name: 'Career Paths', href: '/dashboard/career', icon: Compass },
+    { name: 'Career Paths', href: '/dashboard/careers', icon: Compass },
     { name: 'Learning', href: '/dashboard/learning', icon: BookOpen },
+    { name: 'Skill Mapping', href: '/dashboard/skill-mapping', icon: Network },
     { name: 'Settings', href: '/dashboard/settings', icon: Settings },
 ];
 
@@ -15,13 +16,15 @@ export function Sidebar() {
     const { logout } = useAuth();
 
     return (
-        <div className="flex h-screen w-64 flex-col border-r border-neutral-200 bg-white dark:border-dark-border dark:bg-dark-surface">
-            <div className="flex h-16 items-center px-6">
-                <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary-600 to-accent-purple mr-2" />
-                <span className="text-xl font-bold text-neutral-900 dark:text-white">PathGuide</span>
+        <div className="hidden lg:flex h-screen w-72 flex-col border-r border-white/10 glass-strong relative z-20">
+            <div className="flex h-20 items-center px-6 gap-3">
+                <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-blue-600 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
+                    <Brain className="h-5 w-5 text-white" />
+                </div>
+                <span className="text-xl font-bold bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent">PathGuide</span>
             </div>
 
-            <div className="flex flex-1 flex-col gap-1 px-3 py-4">
+            <div className="flex flex-1 flex-col gap-2 px-4 py-6">
                 {navigation.map((item) => {
                     const isActive = location.pathname === item.href;
                     return (
@@ -29,23 +32,23 @@ export function Sidebar() {
                             key={item.name}
                             to={item.href}
                             className={cn(
-                                'flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-colors',
+                                'flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200',
                                 isActive
-                                    ? 'bg-primary-50 text-primary-600 dark:bg-primary-900/10 dark:text-primary-400'
-                                    : 'text-neutral-600 hover:bg-neutral-50 dark:text-neutral-400 dark:hover:bg-dark-hover'
+                                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-purple-500/20'
+                                    : 'text-purple-200 hover:bg-white/5 hover:text-white'
                             )}
                         >
-                            <item.icon className="h-5 w-5" />
+                            <item.icon className={cn("h-5 w-5", isActive ? "text-white" : "text-purple-400 group-hover:text-white")} />
                             {item.name}
                         </Link>
                     );
                 })}
             </div>
 
-            <div className="border-t border-neutral-200 p-4 dark:border-dark-border">
+            <div className="border-t border-white/10 p-6">
                 <button
                     onClick={logout}
-                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/10"
+                    className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-red-300 transition-colors hover:bg-red-500/10 hover:text-red-200"
                 >
                     <LogOut className="h-5 w-5" />
                     Sign out

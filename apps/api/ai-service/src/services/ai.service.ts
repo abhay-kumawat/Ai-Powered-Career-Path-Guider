@@ -1,72 +1,117 @@
-import OpenAI from 'openai';
+import GrokClient from '../utils/grokClient';
 
 export class AiService {
-    private openai: OpenAI;
+    private grokClient: GrokClient;
 
     constructor() {
-        this.openai = new OpenAI({
-            apiKey: process.env.OPENAI_API_KEY || 'dummy_key',
-        });
+        this.grokClient = new GrokClient();
     }
 
+    /**
+     * Generate career path analysis from user answers/profile
+     */
     async generateCareerPath(answers: any) {
-        if (!process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY === 'dummy_key') {
-            const mock = this.getMockAnalysis(answers);
-            // Simulate delay
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            return mock;
-        }
-
         try {
-            const prompt = this.buildPrompt(answers);
-            const completion = await this.openai.chat.completions.create({
-                messages: [{ role: "user", content: prompt }],
-                model: "gpt-3.5-turbo",
-            });
-
-            const content = completion.choices[0]?.message?.content;
-            return JSON.parse(content || '{}');
+            return await this.grokClient.analyzeCareerPath(answers);
         } catch (error) {
-            console.error("OpenAI API call failed, falling back to mock:", error);
-            return this.getMockAnalysis(answers);
+            console.error('Error generating career path:', error);
+            throw new Error('Failed to generate career path analysis');
         }
     }
 
-    private buildPrompt(answers: any): string {
-        return `
-            Analyze the following user profile and survey answers to suggest career paths.
-            User Profile: ${JSON.stringify(answers)}
-            
-            Return a JSON object with the following structure:
-            {
-                "analysis": "string",
-                "recommendations": [
-                    { "role": "string", "match": number, "reason": "string" }
-                ],
-                "marketTrends": { "demand": "string", "growth": "string" }
-            }
-        `;
+    /**
+     * Chat with AI assistant
+     */
+    async chat(message: string) {
+        try {
+            return await this.grokClient.chat(message);
+        } catch (error) {
+            console.error('Error in AI chat:', error);
+            throw new Error('Failed to chat with AI');
+        }
     }
 
-    private getMockAnalysis(answers: any) {
+    /**
+     * Generate personalized insights based on user profile
+     */
+    async generateInsights(userId: string, profile: any) {
+        try {
+            const request = {
+                userId,
+                skills: profile.skills || [],
+                interests: profile.interests || [],
+                careerGoals: profile.careerGoals
+            };
+
+            return await this.grokClient.generateInsights(request);
+        } catch (error) {
+            console.error('Error generating insights:', error);
+            throw new Error('Failed to generate insights');
+        }
+    }
+
+    /**
+     * Explain why a career recommendation matches the user
+     */
+    async explainRecommendation(userId: string, careerPath: any, userProfile: any) {
+        try {
+            const request = {
+                userId,
+                careerPathTitle: careerPath.title,
+                careerDescription: careerPath.description,
+                userSkills: userProfile.skills?.map((s: any) => s.skillName) || [],
+                userInterests: userProfile.interests?.map((i: any) => i.interestName) || [],
+                matchScore: careerPath.matchScore || 0
+            };
+
+            return await this.grokClient.explainRecommendation(request);
+        } catch (error) {
+            console.error('Error explaining recommendation:', error);
+            throw new Error('Failed to explain recommendation');
+        }
+    }
+
+    /**
+     * Generate a personalized learning roadmap
+     */
+    async generatePersonalizedRoadmap(userId: string, request: any) {
+        try {
+            const roadmapRequest = {
+                userId,
+                careerPathTitle: request.careerPathTitle,
+                currentSkills: request.currentSkills || [],
+                targetSkills: request.targetSkills || [],
+                timeframe: request.timeframe || '6 months'
+            };
+
+            return await this.grokClient.generatePersonalizedRoadmap(roadmapRequest);
+        } catch (error) {
+            console.error('Error generating roadmap:', error);
+            throw new Error('Failed to generate personalized roadmap');
+        }
+    }
+
+    /**
+     * Check if Grok API is properly configured
+     */
+    isGrokConfigured(): boolean {
+        return this.grokClient.isConfigured();
+    }
+
+    /**
+     * Get AI service health status
+     */
+    getHealthStatus() {
         return {
-            analysis: "Based on your strong problem-solving skills and interest in technology (Mock Analysis)...",
-            recommendations: [
-                {
-                    role: "Frontend Engineer",
-                    match: 95,
-                    reason: "Matches your visual creativity and logic skills."
-                },
-                {
-                    role: "Backend Engineer",
-                    match: 85,
-                    reason: "Good fit for your logical reasoning abilities."
-                }
-            ],
-            marketTrends: {
-                demand: "High",
-                growth: "15% annually"
-            }
+            status: 'healthy',
+            grokConfigured: this.isGrokConfigured(),
+            model: 'grok-beta',
+            features: [
+                'Career Path Analysis',
+                'Personalized Insights',
+                'Recommendation Explanations',
+                'Learning Roadmaps'
+            ]
         };
     }
 }

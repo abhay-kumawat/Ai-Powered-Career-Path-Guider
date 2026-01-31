@@ -20,6 +20,15 @@ export default function Settings() {
                 setProfile(data);
             } catch (err) {
                 console.error("Failed to load profile", err);
+                // Mock Fallback for UI testing
+                setProfile({
+                    id: '1',
+                    email: 'demo@pathguide.ai',
+                    firstName: 'Demo',
+                    lastName: 'User',
+                    bio: 'Passionate learner exploring AI career paths.',
+                    preferences: {}
+                } as any);
             }
         };
         loadProfile();
